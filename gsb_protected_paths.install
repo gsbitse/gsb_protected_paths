@@ -1,0 +1,67 @@
+<?php
+
+/**
+ * @file
+ * Protected Pages install file.
+ */
+
+/**
+ * Implements hook_schema(). 
+ */
+function gsb_protected_paths_schema() {
+  $schema['gsb_protected_paths'] = array(
+    'fields' => array(
+      'pid' => array(
+        'description' => 'The primary key always unique.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'password' => array(
+        'type' => 'varchar',
+        'description' => 'The password of the protected node.',
+        'length' => '128',
+        'not null' => TRUE,
+      ),
+      'path' => array(
+        'type' => 'varchar',
+        'description' => 'The path of the protected node.',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'password_text' => array(
+        'type' => 'varchar',
+        'description' => 'The title to be displayed on password screen.',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'weight' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+    ),
+    'indexes' => array(
+      'path' => array('path'),
+    ),
+    'primary key' => array('pid'),
+  );
+  return $schema;
+}
+
+
+/**
+ * Implements hook_uninstall().
+ */
+function gsb_protected_paths_uninstall() {
+
+}
+
+/**
+ * Implements hook_enable().
+ */
+function gsb_protected_paths_enable() {
+  drupal_set_message(t('The Protected Pages module has been successfully enabled.
+    Visit the <a href="@permissions">permissions</a>, and set the permissions.',
+    array('@permissions' => url('admin/people/permissions', array('fragment' => 'module-protected_pages')))));
+}

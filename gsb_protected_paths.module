@@ -1,0 +1,170 @@
+<?php
+/**
+ * @file
+ * This module allows you to protect any node of your website by secure 
+ * password. You can enter alias/urls of paths to protect and set password 
+ * or enter a pattern url to protect subpages unders the url.
+ * Admin (uid = 1) or user with bypass protection permission can view page.
+ */
+/**
+ * Implements hook_menu().
+ */
+function gsb_protected_paths_menu() {
+  $items = array();
+
+  $items['admin/config/gsb/gsb_protected_paths'] = array(
+    'title' => 'Protected Paths',
+    'description' => 'List protected paths.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('gsb_protected_paths_form'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'gsb_protected_paths.admin.inc',
+  );
+
+  $items['admin/config/gsb/gsb_protected_paths/list'] = array(
+    'title' => 'Protected Paths',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+
+  $items['admin/config/gsb/gsb_protected_paths/add'] = array(
+    'title' => 'Add Protected Paths',
+    'description' => 'Add protected paths form.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('gsb_protected_paths_add'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'gsb_protected_paths.admin.inc',
+  );
+
+  $items['admin/config/gsb/gsb_protected_paths/%/edit'] = array(
+    'title' => 'Edit Protected Paths',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('gsb_protected_paths_edit', 4),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'gsb_protected_paths.admin.inc',
+  );
+
+  $items['admin/config/gsb/gsb_protected_paths/%/delete'] = array(
+    'title' => 'Delete Protected Paths',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('gsb_protected_paths_delete_confirm', 4),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_CALLBACK,
+    'file' => 'gsb_protected_paths.admin.inc',
+  );
+
+  $items['protected-paths'] = array(
+    'title' => 'Protected Page',
+    'description' => 'Enter the password for page access',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('gsb_protected_paths_enter_password'),
+    'access callback' => 'gsb_protected_paths_access_callback',
+    'type' => MENU_CALLBACK,
+    'file' => 'gsb_protected_paths.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function gsb_protected_paths_permission() {
+  return array(
+    'skip password protected paths' => array(
+      'title' => t('Skip password protected paths'),
+    ),
+    'allow password screen protected paths' => array(
+      'title' => t('Allow password screen protected paths'),
+    ),
+  );
+}
+
+/**
+ * Checks who can enter password.
+ *
+ * @return boolean 
+ */
+function gsb_protected_paths_access_callback() {
+  global $user;
+
+  if ($user->uid == 1) {
+    return TRUE;
+  }
+  if (!user_access('allow password screen protected paths')) {
+    return FALSE;
+  }
+
+   if (empty($_GET['protected_paths']) || !is_numeric($_GET['protected_paths'])) {
+    return FALSE;
+  } 
+
+  return TRUE;
+} 
+
+/**
+ * Implements hook_theme().
+ */
+function gsb_protected_paths_theme($existing, $type, $theme, $path) {
+
+  $items['gsb_protected_paths_form'] = array(
+    'render element' => 'form',
+    'file' => 'gsb_protected_paths.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_init().
+ */
+function gsb_protected_paths_init() {
+  if (user_access('bypass pages password protection')) {
+    return;
+  }
+  $current_path = current_path();
+  $normal_path = drupal_get_path_alias(drupal_get_normal_path($current_path));
+
+  $pid = gsb_protected_paths_is_page_protected($current_path, $normal_path);
+  if ($pid) {
+    $query = drupal_get_destination();
+    if (!empty($_SERVER['HTTP_REFERER'])) {
+      $query['back'] = urlencode($normal_path);
+    }
+    $query['protected_paths'] = $pid;
+    drupal_goto('protected-paths', array('query' => $query));
+  }
+}
+
+/**
+ * Helper function to check whether the path is protected or not.
+ */
+function gsb_protected_paths_is_page_protected($current_path, $normal_path) {
+  $pattern_match = FALSE;
+  $pid = 0;
+  $query = db_select('gsb_protected_paths')
+      ->fields('gsb_protected_paths', array('path', 'pid'))
+      ->orderby('weight', 'desc');
+  $result = $query->execute();
+  if ($normal_path != 'protected-paths') {
+    foreach ($result as $record) {
+      $pattern_match = drupal_match_path($normal_path, $record->path);
+      if ($pattern_match) {
+        $pid = $record->pid;
+        break;
+      }
+    }
+  }
+
+  if (isset($_SESSION['_protected_paths']['passwords'][$pid]['expire_time'])) {
+    if (time() >= $_SESSION['_protected_paths']['passwords'][$pid]['expire_time']) {
+      unset($_SESSION['_protected_paths']['passwords'][$pid]['request_time']);
+      unset($_SESSION['_protected_paths']['passwords'][$pid]['expire_time']);
+    }
+  }
+
+  if (isset($_SESSION['_protected_paths']['passwords'][$pid]['request_time'])) {
+    return FALSE;
+  }
+  return $pid;
+}

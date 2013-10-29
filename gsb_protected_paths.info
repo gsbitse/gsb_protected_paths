@@ -1,0 +1,11 @@
+name = GSB Protected Paths
+description = A module to Protect Paths
+core = 7.x
+package = GSB
+dependencies[] = pathauto
+
+
+; Information added by drush on 2013-10-17
+version = "7.x-dev"
+project = "gsb_protected_paths"
+datestamp = "1381955957"
