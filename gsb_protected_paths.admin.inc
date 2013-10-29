@@ -361,7 +361,7 @@ function gsb_protected_paths_enter_password_validate($form, &$form_state) {
 
   $query = db_select('gsb_protected_paths')
       ->fields('gsb_protected_paths', array('path', 'pid'))
-      ->orderby('weight', 'desc');
+      ->orderby('weight', 'asc');
   $result = $query->execute();
 
   foreach ($result as $record) {

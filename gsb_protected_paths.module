@@ -144,7 +144,8 @@ function gsb_protected_paths_is_page_protected($current_path, $normal_path) {
   $pid = 0;
   $query = db_select('gsb_protected_paths')
       ->fields('gsb_protected_paths', array('path', 'pid'))
-      ->orderby('weight', 'desc');
+      ->orderby('weight', 'asc');
+
   $result = $query->execute();
   if ($normal_path != 'protected-paths') {
     foreach ($result as $record) {
