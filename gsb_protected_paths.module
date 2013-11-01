@@ -74,9 +74,6 @@ function gsb_protected_paths_permission() {
     'skip password protected paths' => array(
       'title' => t('Skip password protected paths'),
     ),
-    'allow password screen protected paths' => array(
-      'title' => t('Allow password screen protected paths'),
-    ),
   );
 }
 
@@ -91,11 +88,8 @@ function gsb_protected_paths_access_callback() {
   if ($user->uid == 1) {
     return TRUE;
   }
-  if (!user_access('allow password screen protected paths')) {
-    return FALSE;
-  }
 
-   if (empty($_GET['protected_paths']) || !is_numeric($_GET['protected_paths'])) {
+  if (empty($_GET['protected_paths']) || !is_numeric($_GET['protected_paths'])) {
     return FALSE;
   } 
 
