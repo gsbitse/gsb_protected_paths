@@ -85,7 +85,7 @@ function gsb_protected_paths_form($form, &$form_state) {
         ),
       ),
     );
-  } 
+  }
 
   $form['#tree'] = TRUE;
 
@@ -110,7 +110,7 @@ function gsb_protected_paths_form_submit(&$form, &$form_state) {
       db_update('gsb_protected_paths')
         ->fields($values)
         ->condition('pid', $record->pid)
-        ->execute(); 
+        ->execute();
     }
   }
 
@@ -189,7 +189,7 @@ function gsb_protected_paths_add_validate($form, &$form_state) {
       ->fetchField();
   if ($pid) {
     form_set_error('path', t('Duplicate path not allowed.'));
-  } 
+  }
 }
 
 /**
@@ -314,84 +314,4 @@ function gsb_protected_paths_delete_confirm_submit($form, &$form_state) {
   }
 }
 
-/**
- * Callback function for enter password paths.
- */
-function gsb_protected_paths_enter_password($form, &$form_state) {
 
-  $query = db_select('gsb_protected_paths')
-      ->fields('gsb_protected_paths', array('pid', 'password_text'))
-      ->condition('pid', $_GET['protected_paths'])
-      ->range(0, 1);
-
-  $result = $query->execute()->fetchAll();
-
-  $form['protected_paths_enter_password'] = array(
-    '#type' => 'fieldset',
-    '#description' => t('Please enter the password to view this page.'),
-    '#collapsible' => FALSE,
-  );
-
-  $form['protected_paths_enter_password']['password'] = array(
-    '#type' => 'password',
-    '#title' => $result[0]->password_text,
-    '#size' => 20,
-    '#required' => TRUE,
-  );
-
-  $form['protected_paths_pid'] = array(
-    '#type' => 'hidden',
-    '#value' => $_GET['protected_paths'],
-  );
-
-  $form['protected_paths_enter_password']['submit'] = array(
-    '#type' => 'submit',
-    '#value' => 'Enter Page',
-  );
-
-  return $form;
-}
-
-/**
- * Implements hook_validate().
- */
-function gsb_protected_paths_enter_password_validate($form, &$form_state) {
-  $password = sha1(trim(check_plain($form_state['values']['password'])));
-  $path = drupal_get_path_alias($_GET['destination']);
-
-  $query = db_select('gsb_protected_paths')
-      ->fields('gsb_protected_paths', array('path', 'pid'))
-      ->orderby('weight', 'asc');
-  $result = $query->execute();
-
-  foreach ($result as $record) {
-    $pattern_match = drupal_match_path($path, $record->path);
-    if ($pattern_match) {
-      $matched_pid = $record->pid;
-      break;
-    }
-  }
-
-  $pid = db_select('gsb_protected_paths')
-        ->fields('gsb_protected_paths', array('pid'))
-        ->condition('password', $password)
-        ->condition('pid', $matched_pid)
-        ->range(0, 1)
-        ->execute()
-        ->fetchField();
-    if (!$pid) {
-
-      form_set_error('password', t('Invalid password!'));
-    }
-}
-
-/**
- * Implements hook_submit().
- */
-function gsb_protected_paths_enter_password_submit($form, &$form_state) {
-   $_SESSION['_protected_paths']['passwords'][$form_state['values']['protected_paths_pid']]['request_time'] = REQUEST_TIME;
-  $session_expire_time = 0;
-  if ($session_expire_time) {
-    $_SESSION['_protected_paths']['passwords'][$form_state['values']['protected_paths_pid']]['expire_time'] = strtotime("+{$session_expire_time} minutes");
-  }
-}
