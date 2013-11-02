@@ -1,8 +1,8 @@
 <?php
 /**
  * @file
- * This module allows you to protect any node of your website by secure 
- * password. You can enter alias/urls of paths to protect and set password 
+ * This module allows you to protect any node of your website by secure
+ * password. You can enter alias/urls of paths to protect and set password
  * or enter a pattern url to protect subpages unders the url.
  * Admin (uid = 1) or user with bypass protection permission can view page.
  */
@@ -12,7 +12,7 @@
 function gsb_protected_paths_menu() {
   $items = array();
 
-  $items['admin/config/gsb/gsb_protected_paths'] = array(
+  $items['admin/config/gsb/gsb-protected-paths'] = array(
     'title' => 'Protected Paths',
     'description' => 'List protected paths.',
     'page callback' => 'drupal_get_form',
@@ -21,12 +21,12 @@ function gsb_protected_paths_menu() {
     'file' => 'gsb_protected_paths.admin.inc',
   );
 
-  $items['admin/config/gsb/gsb_protected_paths/list'] = array(
+  $items['admin/config/gsb/gsb-protected-paths/list'] = array(
     'title' => 'Protected Paths',
     'type' => MENU_DEFAULT_LOCAL_TASK,
   );
 
-  $items['admin/config/gsb/gsb_protected_paths/add'] = array(
+  $items['admin/config/gsb/gsb-protected-paths/add'] = array(
     'title' => 'Add Protected Paths',
     'description' => 'Add protected paths form.',
     'page callback' => 'drupal_get_form',
@@ -36,7 +36,7 @@ function gsb_protected_paths_menu() {
     'file' => 'gsb_protected_paths.admin.inc',
   );
 
-  $items['admin/config/gsb/gsb_protected_paths/%/edit'] = array(
+  $items['admin/config/gsb/gsb-protected-paths/%/edit'] = array(
     'title' => 'Edit Protected Paths',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('gsb_protected_paths_edit', 4),
@@ -44,7 +44,7 @@ function gsb_protected_paths_menu() {
     'file' => 'gsb_protected_paths.admin.inc',
   );
 
-  $items['admin/config/gsb/gsb_protected_paths/%/delete'] = array(
+  $items['admin/config/gsb/gsb-protected-paths/%/delete'] = array(
     'title' => 'Delete Protected Paths',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('gsb_protected_paths_delete_confirm', 4),
@@ -80,7 +80,7 @@ function gsb_protected_paths_permission() {
 /**
  * Checks who can enter password.
  *
- * @return boolean 
+ * @return boolean
  */
 function gsb_protected_paths_access_callback() {
   global $user;
@@ -91,10 +91,10 @@ function gsb_protected_paths_access_callback() {
 
   if (empty($_GET['protected_paths']) || !is_numeric($_GET['protected_paths'])) {
     return FALSE;
-  } 
+  }
 
   return TRUE;
-} 
+}
 
 /**
  * Implements hook_theme().
